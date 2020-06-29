@@ -26,14 +26,17 @@ namespace SendDataToExternalAPI.Web.Controllers
         public async Task<IActionResult> SendForm(FormDTO data)
         {
             if (ModelState.IsValid)
-            {                
-                var isTrue = false;
-                while (isTrue != true)
+            {
+                var isSend = false;
+
+                while (isSend != true)
                 {
-                    isTrue = await formService.SendForm(data);
+                    isSend = await formService.SendForm(data);
                 }
+
                 this.toastNotification.AddSuccessToastMessage("The form is send successfuly!");
-                return View("CreateForm");
+
+                return RedirectToAction("CreateForm");
             }
             this.toastNotification.AddErrorToastMessage("Invalid Email");
             return View("CreateForm");

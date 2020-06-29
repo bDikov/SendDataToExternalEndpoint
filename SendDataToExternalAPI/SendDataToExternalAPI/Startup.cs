@@ -1,11 +1,15 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NToastNotify;
+using Polly;
+using Polly.Extensions.Http;
 using SendDataToExternalAPI.Services.Services;
 using SendDataToExternalAPI.Services.Services.Contracts;
+using System.Net.Http;
 
 namespace SendDataToExternalAPI
 {
@@ -28,6 +32,25 @@ namespace SendDataToExternalAPI
             });
             services.AddControllersWithViews();
             services.AddScoped<IFormService, FormService>();
+
+            services.AddHttpClient("HttpClient").AddPolicyHandler(GetRetryPolicy());
+
+             static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+            {
+                return HttpPolicyExtensions
+                  // Handle HttpRequestExceptions, 408 and 5xx status codes
+                  .HandleTransientHttpError()
+                  // Handle 404 not found
+                  .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                  // Handle 401 Unauthorized
+                  .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                  .OrResult(msg=>msg.StatusCode==System.Net.HttpStatusCode.GatewayTimeout)
+                  // What to do if any of the above erros occur:
+                  // Retry 3 times, each time wait 1,2 and 4 seconds before retrying.
+                  //Hopping it wont have more than 3 attempts
+                  .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));                
+            }
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

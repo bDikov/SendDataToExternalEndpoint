@@ -1,6 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SendDataToExternalAPI.Services.ModelsDTO;
@@ -10,36 +11,40 @@ namespace SendDataToExternalAPI.Services.Services
 {
     public class FormService : IFormService
     {
-        public Task<bool> SendForm(FormDTO data)
+        private readonly IHttpClientFactory _clientFactory;
+
+        public FormService(IHttpClientFactory clientFactory)
         {
-         
-            var externalApiURL = String.Format("https://us-central1-randomfails.cloudfunctions.net/submitEmail");
+            _clientFactory = clientFactory;
+        }
 
-            var request = WebRequest.Create(externalApiURL);
-            request.Method = "POST";
-            request.ContentType = "application/json";
+        public async Task<bool> SendForm(FormDTO data)
+        {
 
+            var httpClient = _clientFactory.CreateClient("HttpClient");
+            httpClient.Timeout = System.TimeSpan.FromSeconds(75);
             var dataToSend = JsonSerializer.Serialize(data);
-           
-            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
-            {
-                streamWriter.Write(dataToSend);
-                streamWriter.Flush();
-                streamWriter.Close();
 
+            using (var content = new StringContent(dataToSend, Encoding.UTF8, "application/json"))
+            {
                 try
                 {
-                    var response = request.GetResponse();
-                    return Task.FromResult(true);
+                    var result = await httpClient.PostAsync($"https://us-central1-randomfails.cloudfunctions.net/submitEmail", content);
+
+                    // The call was a success
+
+                    if (result.StatusCode == HttpStatusCode.OK)
+                    {
+                        return true;
+                    }
+
+                    return false;
                 }
                 catch (Exception)
                 {
-
-                    return Task.FromResult(false);
+                    return false;
                 }
-
             }
-          
         }
     }
 }

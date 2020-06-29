@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendDataToExternalAPI.Web", "SendDataToExternalAPI\SendDataToExternalAPI.Web.csproj", "{06CAD914-4F31-4C7B-B198-FD5A634D833C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SendDataToExternalAPI.Web", "SendDataToExternalAPI\SendDataToExternalAPI.Web.csproj", "{06CAD914-4F31-4C7B-B198-FD5A634D833C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendDataToExternalAPI.Services", "SendDataToExternalAPI.Services\SendDataToExternalAPI.Services.csproj", "{5905480C-693B-4EFE-89CB-2C2CF3F291F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SendDataToExternalAPI.Services", "SendDataToExternalAPI.Services\SendDataToExternalAPI.Services.csproj", "{5905480C-693B-4EFE-89CB-2C2CF3F291F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
