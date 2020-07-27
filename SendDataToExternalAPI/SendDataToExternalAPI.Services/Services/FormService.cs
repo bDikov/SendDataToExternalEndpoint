@@ -22,13 +22,14 @@ namespace SendDataToExternalAPI.Services.Services
         {
 
             var httpClient = _clientFactory.CreateClient("HttpClient");
-            httpClient.Timeout = System.TimeSpan.FromSeconds(75);
+            httpClient.Timeout = System.TimeSpan.FromSeconds(275);
             var dataToSend = JsonSerializer.Serialize(data);
 
             using (var content = new StringContent(dataToSend, Encoding.UTF8, "application/json"))
             {
                 try
                 {
+
                     var result = await httpClient.PostAsync($"https://us-central1-randomfails.cloudfunctions.net/submitEmail", content);
 
                     // The call was a success

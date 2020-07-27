@@ -10,6 +10,9 @@ using Polly.Extensions.Http;
 using SendDataToExternalAPI.Services.Services;
 using SendDataToExternalAPI.Services.Services.Contracts;
 using System.Net.Http;
+using SendDataToExternalAPI.Web.Hubs;
+using SendDataToExternalAPI.Services.ModelsDTO;
+using SendDataToExternalAPI.Web.Helpers;
 
 namespace SendDataToExternalAPI
 {
@@ -28,14 +31,19 @@ namespace SendDataToExternalAPI
             services.AddMvc().AddNToastNotifyToastr(new ToastrOptions()
             {
                 ProgressBar = false,
-                PositionClass = ToastPositions.TopFullWidth
+                PositionClass = ToastPositions.TopCenter
             });
             services.AddControllersWithViews();
             services.AddScoped<IFormService, FormService>();
+            services.AddScoped<IFormDTO, FormDTO>();
+            services.AddSingleton(new Random());
+            services.AddSingleton<OrderChecker>();
+            services.AddRazorPages();
+            services.AddSignalR();
 
             services.AddHttpClient("HttpClient").AddPolicyHandler(GetRetryPolicy());
 
-             static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+            static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
             {
                 return HttpPolicyExtensions
                   // Handle HttpRequestExceptions, 408 and 5xx status codes
@@ -44,11 +52,11 @@ namespace SendDataToExternalAPI
                   .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                   // Handle 401 Unauthorized
                   .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                  .OrResult(msg=>msg.StatusCode==System.Net.HttpStatusCode.GatewayTimeout)
+                  .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.GatewayTimeout)
                   // What to do if any of the above erros occur:
                   // Retry 3 times, each time wait 1,2 and 4 seconds before retrying.
                   //Hopping it wont have more than 3 attempts
-                  .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));                
+                  .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
             }
 
         }
@@ -79,6 +87,9 @@ namespace SendDataToExternalAPI
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+                endpoints.MapHub<ChatHub>("/chathub");
+
             });
         }
     }
